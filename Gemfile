@@ -10,12 +10,13 @@ gem 'execjs'
 gem 'therubyracer'
 
 group :development do
-  gem 'rspec-rails', '2.5.0'
+  gem 'rspec-rails'
 end
 
 group :test do
-  gem 'rspec', '2.5.0'
+  gem 'rspec'
   gem 'webrat', '0.7.1'
+  gem 'spork'
 end
 
 group :production do
