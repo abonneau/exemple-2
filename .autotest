@@ -10,6 +10,9 @@ module Autotest::GnomeNotify
 
   Autotest.add_hook :initialize do |autotest|
     %w{.svn .hg .git vendor rerun.txti db log tmp .DS_store Gemfile.lock}.each { |exception| autotest.add_exception(exception) }
+    autotest.add_mapping(/^spec\/requests\/.*_spec\.rb$/) do
+      autotest.files_matching(/^spec\/requests\/.*_spec\.rb$/)
+    end
   end
  
   Autotest.add_hook :ran_command do |at|

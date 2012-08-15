@@ -49,7 +49,7 @@ describe PagesController do
     #test de titre
     it "devrait avoir le bon titre" do
       get 'about'
-      response.should have_selector("title", :content => @base_title + " | A propos")
+      response.should have_selector("title", :content => @base_title + " | À Propos")
     end
   end
 
