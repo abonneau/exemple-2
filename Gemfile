@@ -8,6 +8,12 @@ gem 'rails', '3.2.8'
 gem 'sqlite3', :group => :development
 gem 'execjs'
 gem 'therubyracer'
+gem 'gravatar_image_tag'
+
+group :test, :development do
+  gem 'factory_girl_rails'
+end
+
 
 group :development do
   gem 'rspec-rails'
