@@ -9,6 +9,7 @@ gem 'sqlite3', :group => :development
 gem 'execjs'
 gem 'therubyracer'
 gem 'gravatar_image_tag'
+gem 'will_paginate'
 
 group :test, :development do
   gem 'factory_girl_rails'
@@ -18,6 +19,7 @@ end
 group :development do
   gem 'rspec-rails'
   gem 'annotate'
+  gem 'faker', '0.3.1'
 end
 
 group :test do
