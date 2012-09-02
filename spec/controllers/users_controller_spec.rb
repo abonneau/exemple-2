@@ -7,6 +7,48 @@ require 'factory_girl_rails'
 describe UsersController do
   render_views
 
+  describe "GET 'index'" do
+
+    describe "pour utilisateur non identifiés" do
+      it "devrait refuser l'accès" do
+        get :index
+        response.should redirect_to(signin_path)
+        flash[:notice].should =~ /identifier/i
+      end
+    end
+
+    describe "pour un utilisateur identifié" do
+
+      before(:each) do
+        @user = test_sign_in(FactoryGirl.create(:user))
+        second = FactoryGirl.create(:user, :email => "another@example.com")
+        third  = FactoryGirl.create(:user, :email => "another@example.net")
+
+        @users = [@user, second, third]
+        30.times do
+          @users << FactoryGirl.create(:user, :email => FactoryGirl.generate(:email))
+        end
+      end
+
+      it "devrait réussir" do
+        get :index
+        response.should be_success
+      end
+
+      it "devrait avoir le bon titre" do
+        get :index
+        response.should have_selector("title", :content => "Tous les utilisateurs")
+      end
+
+      it "devrait avoir un élément pour chaque utilisateur" do
+        get :index
+        @users.each do |user|
+          response.should have_selector("li", :content => user.nom)
+        end
+      end
+    end
+  end
+
   describe "Get 'show'" do
 
     before(:each) do
@@ -102,6 +144,160 @@ describe UsersController do
       it "devrait avoir un message de bienvenue" do
         post :create, :user => @attr
         flash[:success].should =~ /Bienvenue dans l'Application Exemple/i
+      end
+    end
+  end
+
+  describe "GET 'edit'" do
+
+    before(:each) do
+      @user = FactoryGirl.create(:user)
+      test_sign_in(@user)
+    end
+
+    it "devrait réussir" do
+      get :edit, :id => @user
+      response.should be_success
+    end
+
+    it "devrait avoir le bon titre" do
+      get :edit, :id => @user
+      response.should have_selector("title", :content => "Édition profil")
+    end
+
+    it "devrait avoir un lien pour changer l'image Gravatar" do
+      get :edit, :id => @user
+      gravatar_url = "http://gravatar.com/emails"
+      response.should have_selector("a", :href => gravatar_url,
+                                         :content => "changer")
+    end
+  end
+
+  describe "PUT 'update'" do
+
+    before(:each) do
+      @user = FactoryGirl.create(:user)
+      test_sign_in(@user)
+    end
+
+    describe "Échec" do
+
+      before(:each) do
+        @attr = { :email => "", :nom => "", :password => "",
+                  :password_confirmation => "" }
+      end
+
+      it "devrait retourner la page d'édition" do
+        put :update, :id => @user, :user => @attr
+        response.should render_template('edit')
+      end
+
+      it "devrait avoir le bon titre" do
+        put :update, :id => @user, :user => @attr
+        response.should have_selector("title", :content => "Édition profil")
+      end
+    end
+
+    describe "succès" do
+
+      before(:each) do
+        @attr = { :nom => "New Name", :email => "user@example.org",
+                  :password => "barbaz", :password_confirmation => "barbaz" }
+      end
+
+      it "devrait modifier les caractéristiques de l'utilisateur" do
+        put :update, :id => @user, :user => @attr
+        @user.reload
+        @user.nom.should  == @attr[:nom]
+        @user.email.should == @attr[:email]
+      end
+
+      it "devrait rediriger vers la page d'affichage de l'utilisateur" do
+        put :update, :id => @user, :user => @attr
+        response.should redirect_to(user_path(@user))
+      end
+
+      it "devrait afficher un message flash" do
+        put :update, :id => @user, :user => @attr
+        flash[:success].should =~ /actualisé/
+      end
+    end
+  end
+
+  describe "authentification des pages edit/update" do
+
+    before(:each) do
+      @user = FactoryGirl.create(:user)
+    end
+
+    describe "pour un utilisateur non identifié" do
+
+      it "devrait refuser l'acccès à l'action 'edit'" do
+        get :edit, :id => @user
+        response.should redirect_to(signin_path)
+      end
+
+      it "devrait refuser l'accès à l'action 'update'" do
+        put :update, :id => @user, :user => {}
+        response.should redirect_to(signin_path)
+      end
+    end
+
+    describe "pour un utilisateur identifié" do
+
+      before(:each) do
+        wrong_user = FactoryGirl.create(:user, :email => "user@example.net")
+        test_sign_in(wrong_user)
+      end
+
+      it "devrait correspondre à l'utilisateur à éditer" do
+        get :edit, :id => @user
+        response.should redirect_to(root_path)
+      end
+
+      it "devrait correspondre à l'utilisateur à actualiser" do
+        put :update, :id => @user, :user => {}
+        response.should redirect_to(root_path)
+      end
+    end
+  end
+  describe "DELETE 'destroy'" do
+
+    before(:each) do
+      @user = FactoryGirl.create(:user)
+    end
+
+    describe "en tant qu'utilisateur non identifié" do
+      it "devrait refuser l'accès" do
+        delete :destroy, :id => @user
+        response.should redirect_to(signin_path)
+      end
+    end
+
+    describe "en tant qu'utilisateur non administrateur" do
+      it "devrait protéger la page" do
+        test_sign_in(@user)
+        delete :destroy, :id => @user
+        response.should redirect_to(root_path)
+      end
+    end
+
+    describe "en tant qu'administrateur" do
+
+      before(:each) do
+        admin = FactoryGirl.create(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(admin)
+      end
+
+      it "devrait détruire l'utilisateur" do
+        lambda do
+          delete :destroy, :id => @user
+        end.should change(User, :count).by(-1)
+      end
+
+      it "devrait rediriger vers la page des utilisateurs" do
+        delete :destroy, :id => @user
+        response.should redirect_to(users_path)
       end
     end
   end

@@ -4,10 +4,16 @@
 require 'factory_girl_rails'
 
 FactoryGirl.define do
+
+	sequence :email do |n|
+		"person-#{n}@example.com"
+	end
+
 	factory :user do |user|
 		user.nom					"Aurélien Bonneau"
-		user.email					"aurelienbonneau@free.fr"
+		user.email					FactoryGirl.generate :email
 		user.password 				"foobar"
 		user.password_confirmation	"foobar"
 	end
+	
 end

@@ -73,5 +73,11 @@ describe "LayoutLinks" do
       response.should have_selector("a", :href => user_path(@user),
                                          :content => "Profil")
     end
+
+    it "devrait avoir un lien vers les réglages du profil" do
+      visit root_path
+      response.should have_selector("a", :href => edit_user_path(@user),
+                                         :content => "Réglages")
+    end
   end
 end
