@@ -19,7 +19,7 @@ end
 group :development do
   gem 'rspec-rails'
   gem 'annotate'
-  gem 'faker', '0.3.1'
+  gem 'faker', '0.3.1', require => false
 end
 
 group :test do
