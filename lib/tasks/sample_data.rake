@@ -2,11 +2,12 @@
 # encoding: utf-8
 
 
-require 'faker'
+
 
 namespace :db do
   desc "Peupler la base de données"
   task :populate => :environment do
+    require 'faker'
     Rake::Task['db:reset'].invoke
     administrateur = User.create!(:nom => "Example User",
                          :email => "example@railstutorial.org",
