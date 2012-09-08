@@ -10,6 +10,7 @@
 #  updated_at         :datetime         not null
 #  encrypted_password :string(255)
 #  salt               :string(255)
+#  admin              :boolean          default(FALSE)
 #
 
 #!/bin/env ruby
@@ -159,6 +160,48 @@ describe User do
     it "devrait pouvoir devenir un administrateur" do
       @user.toggle!(:admin)
       @user.should be_admin
+    end
+  end
+
+  describe "les associations au micro-message" do
+
+    before(:each) do
+      @user = User.create(@attr)
+      @mp1 = FactoryGirl.create(:micropost, :user => @user, :created_at => 1.day.ago)
+      @mp2 = FactoryGirl.create(:micropost, :user => @user, :created_at => 1.hour.ago)
+    end
+
+    it "devrait avoir un attribut 'microposts'" do
+      @user.should respond_to(:microposts)
+    end
+
+    it "devrait avoir les bons micro-messags dans le bon ordre" do
+      @user.microposts.should == [@mp2, @mp1]
+    end
+
+    it "devrait détruire les micro-messages associés" do
+      @user.destroy
+      [@mp1, @mp2].each do |micropost|
+        Micropost.find_by_id(micropost.id).should be_nil
+      end
+    end
+
+    describe "État de l'alimentation" do
+
+      it "devrait avoir une methode `feed`" do
+        @user.should respond_to(:feed)
+      end
+
+      it "devrait inclure les micro-messages de l'utilisateur" do
+        @user.feed.include?(@mp1).should be_true
+        @user.feed.include?(@mp2).should be_true
+      end
+
+      it "ne devrait pas inclure les micro-messages d'un autre utilisateur" do
+        mp3 = FactoryGirl.create(:micropost,
+                      :user => FactoryGirl.create(:user, :email => FactoryGirl.generate(:email)))
+        @user.feed.include?(mp3).should be_false
+      end
     end
   end
 
