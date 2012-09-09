@@ -11,17 +11,39 @@ describe PagesController do
     @base_title = "Simple App du Tutoriel Ruby on Rails"
   end
 
-  #tests de la page "home"
   describe "GET 'home'" do
-    #test d'existence
-    it "devrait réussir" do
-      get 'home'
-      response.should be_success
+
+    describe "quand pas identifié" do
+
+      before(:each) do
+        get :home
+      end
+
+      it "devrait réussir" do
+        response.should be_success
+      end
+
+      it "devrait avoir le bon titre" do
+        response.should have_selector("title",
+                                      :content => "#{@base_titre} | Accueil")
+      end
     end
-    #test de titre
-    it "devrait avoir le bon titre" do
-      get 'home'
-      response.should have_selector("title", :content => @base_title + " | Accueil")
+
+    describe "quand identifié" do
+
+      before(:each) do
+        @user = test_sign_in(FactoryGirl.create(:user))
+        other_user = FactoryGirl.create(:user, :email => FactoryGirl.generate(:email))
+        other_user.follow!(@user)
+      end
+
+      it "devrait avoir le bon compte d'auteurs et de lecteurs" do
+        get :home
+        response.should have_selector("a", :href => following_user_path(@user),
+                                           :content => "0 auteur suivi")
+        response.should have_selector("span", :id => "followers",
+                                           :content => "1 lecteur")
+      end
     end
   end
 

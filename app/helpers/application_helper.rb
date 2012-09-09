@@ -15,4 +15,17 @@ module ApplicationHelper
 		end
 	end
 
+	#modification de la methode pluralise pour le pluriel français
+	def pluralize(count, singular, plural = nil) 
+         "#{count} " + if count.to_i <= 1 
+                singular 
+        elsif plural 
+                plural 
+        elsif Object.const_defined?( "Inflector") 
+                Inflector.pluralize(singular) 
+        else 
+                singular + "s" 
+        end 
+    end 
+
 end
