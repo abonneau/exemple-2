@@ -10,6 +10,7 @@ gem 'execjs'
 gem 'therubyracer'
 gem 'gravatar_image_tag'
 gem 'will_paginate'
+gem 'newrelic_rpm'
 
 group :test, :development do
   gem 'factory_girl_rails'
