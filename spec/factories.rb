@@ -1,4 +1,4 @@
-#!/bin/ruby
+ #!/bin/ruby
 # encoding: utf-8
 
 require 'factory_girl_rails'
